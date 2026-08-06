@@ -1,3 +1,4 @@
+# Build the Spring Boot executable JAR with the project's Gradle wrapper.
 FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /workspace
@@ -6,6 +7,7 @@ COPY gradlew gradlew
 COPY gradle gradle
 COPY build.gradle settings.gradle ./
 RUN chmod +x gradlew
+
 COPY src src
 
 RUN ./gradlew clean bootJar -x test --no-daemon \
@@ -13,6 +15,7 @@ RUN ./gradlew clean bootJar -x test --no-daemon \
     && test -n "$JAR_FILE" \
     && cp "$JAR_FILE" /tmp/app.jar
 
+# Run with a smaller Java 21 image.
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app

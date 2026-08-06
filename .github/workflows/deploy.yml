@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -19,6 +20,7 @@ env:
   ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   CONTAINER_PORT: ${{ secrets.CONTAINER_PORT }}
+
   ECS_EXECUTION_ROLE: ecsTaskExecutionRole
   ECS_INFRASTRUCTURE_ROLE: ecsInfrastructureRoleForExpressServices
 
@@ -26,6 +28,7 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v6
@@ -37,18 +40,22 @@ jobs:
             echo "Falta configurar el secreto AWS_REGION"
             exit 1
           fi
+
           if [ -z "$ECS_CLUSTER" ]; then
             echo "Falta configurar el secreto ECS_CLUSTER"
             exit 1
           fi
+
           if [ -z "$ECS_SERVICE" ]; then
             echo "Falta configurar el secreto ECS_SERVICE"
             exit 1
           fi
+
           if [ -z "$ECR_REPOSITORY" ]; then
             echo "Falta configurar el secreto ECR_REPOSITORY"
             exit 1
           fi
+
           if [ -z "$CONTAINER_PORT" ]; then
             echo "Falta configurar el secreto CONTAINER_PORT"
             exit 1
@@ -61,16 +68,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Obtener numero de cuenta AWS
+      - name: Obtener número de cuenta AWS
         id: aws-account
         shell: bash
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity \
             --query Account \
             --output text)
+
           echo "id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Iniciar sesion en Amazon ECR
+      - name: Iniciar sesión en Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -83,15 +91,19 @@ jobs:
         run: |
           IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
           echo "Construyendo imagen: $IMAGE_URI"
+
           docker build \
             --platform linux/amd64 \
             --pull \
             -t "$IMAGE_URI" \
             -t "$LATEST_URI" \
             .
+
           docker push "$IMAGE_URI"
           docker push "$LATEST_URI"
+
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
       - name: Desplegar en ECS Express
@@ -100,10 +112,12 @@ jobs:
           service-name: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           image: ${{ steps.build-image.outputs.image }}
+
           execution-role-arn: arn:aws:iam::${{ steps.aws-account.outputs.id }}:role/${{ env.ECS_EXECUTION_ROLE }}
           infrastructure-role-arn: arn:aws:iam::${{ steps.aws-account.outputs.id }}:role/${{ env.ECS_INFRASTRUCTURE_ROLE }}
+
           container-port: ${{ env.CONTAINER_PORT }}
-          health-check-path: /health
+
           environment-variables: |
             [
               {
@@ -120,7 +134,7 @@ jobs:
               }
             ]
 
-      - name: Mostrar informacion del despliegue
+      - name: Mostrar información del despliegue
         if: success()
         shell: bash
         run: |
