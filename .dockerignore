@@ -1,0 +1,9 @@
+.git
+.idea
+.gradle
+build
+out
+*.iml
+.env
+railway-local.properties
+railway-local.properties.example
