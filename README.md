@@ -26,12 +26,6 @@ API REST en **Spring Boot 4** / **Java 21** para gestionar destinos, paquetes tu
 
 Copia `.env.example` a `.env` (no se sube a Git) o exporta las variables:
 
-| Variable | Default | Descripción |
-|----------|---------|-------------|
-| `DB_URL` | `jdbc:mysql://localhost:3306/parchemos_travel?...` | JDBC URL |
-| `DB_USERNAME` | `root` | Usuario MySQL |
-| `DB_PASSWORD` | `123456` | Contraseña MySQL |
-| `PORT` | `8080` | Puerto HTTP |
 
 Hibernate usa `ddl-auto=update`: crea/actualiza tablas al arrancar. Hay seeders de admin, destinos y paquetes de Colombia.
 
@@ -56,26 +50,7 @@ gradlew.bat bootRun
 java -jar build/libs/*.jar
 ```
 
-### Docker
 
-```bash
-docker build -t parchemos-travel .
-docker run -p 8080:8080 \
-  -e DB_URL="jdbc:mysql://host.docker.internal:3306/parchemos_travel?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
-  -e DB_USERNAME=root \
-  -e DB_PASSWORD=123456 \
-  parchemos-travel
-```
-
-## Documentación Swagger
-
-Con la app en marcha:
-
-| Recurso | URL |
-|---------|-----|
-| Swagger UI | http://localhost:8080/swagger-ui.html |
-| OpenAPI JSON | http://localhost:8080/v3/api-docs |
-| Health | http://localhost:8080/health |
 
 ## Endpoints principales
 
@@ -133,8 +108,7 @@ Paquete ──┼── Destino
 
 - Login/registro con email y contraseña hasheada (BCrypt).
 - **No** hay JWT ni filtros de Spring Security: los endpoints están abiertos.
-- CORS habilitado para `localhost:5500` y `https://jua039.github.io`.
-- Admin sembrado (solo desarrollo): `gerencia.parchemos@admin.co` / `Parchemos#2026`.
+
 
 ## Estructura del proyecto
 
@@ -149,16 +123,7 @@ src/main/java/com/parchemos/travel/
 └── service/         # Lógica de negocio
 ```
 
-## Despliegue (ECS Express)
 
-Push a `main` dispara `.github/workflows/deploy.yml`:
-
-1. Build de imagen Docker
-2. Push a Amazon ECR
-3. Deploy del servicio Express en ECS
-4. Health check en `/health`
-
-Secretos de GitHub necesarios: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `ECS_CLUSTER`, `ECS_SERVICE`, `ECR_REPOSITORY`, `CONTAINER_PORT`, `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 
 ## Tests
 
